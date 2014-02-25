@@ -1,6 +1,11 @@
+# Compiled Code
 *.class
 
-# Package Files #
+# Package Files
 *.jar
 *.war
 *.ear
+
+# Netbeans Project Files
+nbproject/
+build.xml
