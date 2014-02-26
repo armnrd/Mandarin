@@ -1,10 +1,8 @@
 package fractilium.gui.fsp;
 
-import arfljni.mbrot.ArFLMbrotEventHandler;
-import arfljni.mbrot.ArFLMbrotParameters;
-import arfljni.mbrot.ArFLMbrotStatistics;
 import fractilium.Fractilium;
-import arfljni.mbrot.ArFLMbrotRenderer;
+import fractilium.engine.MandelbrotEngine;
+import fractilium.engine.MandelbrotEngine.EventHandler;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
@@ -31,7 +29,7 @@ import sun.awt.image.ImageAccessException;
  *
  * @author Ari
  */
-public class MandelbrotSettingsPanel extends javax.swing.JPanel implements ArFLMbrotEventHandler {
+public class MandelbrotSettingsPanel extends javax.swing.JPanel implements MandelbrotEngine.EventHandler {
 
     private static final int PRECISION = 200;
     private int plusChainSampleSize, plusChainStep, plusChainPosition, plusChainLimit;
@@ -42,7 +40,7 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements ArFLM
     private ByteBuffer b;
     private Fractilium f;
     private boolean renderInProgress, starTask, plusTask;
-    private ArFLMbrotStatistics stats;
+    private MandelbrotEngine.Statistics stats;
 
     /**
      * Creates new form MandelbrotSettingsPanel
@@ -66,7 +64,7 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements ArFLM
         setSelRenRegion(planeMinX, planeMaxX, planeMinY, planeMaxY);
         setCurRenRegion(planeMinX, planeMaxX, planeMinY, planeMaxY);
         this.f = f;
-        stats = new ArFLMbrotStatistics(0, 0, 0, 0, 0);
+        stats = new MandelbrotEngine.Statistics(0, 0, 0, 0, 0);
     }
 
     /**
@@ -457,38 +455,38 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements ArFLM
     }//GEN-LAST:event_drawButtonActionPerformed
 
     private void starButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_starButtonActionPerformed
-        ArFLMbrotParameters p;
+        MandelbrotEngine.Parameters p;
 
         b = ByteBuffer.allocateDirect(2000 * 2000 * 4);
         setCurRenRegion(selMinX, selMaxX, selMinY, selMaxY);
-        p = new ArFLMbrotParameters(planeMinX, planeMaxX, planeMinY, planeMaxY,
+        p = new MandelbrotEngine.Parameters(planeMinX, planeMaxX, planeMinY, planeMaxY,
                 2000, 2000, Integer.parseInt(maxIterTextField.getText()),
                 arbPrecCheckBox.isSelected(), Integer.parseInt(arbPrecTextField.getText()),
                 Integer.parseInt(sampleSizeTextField.getText()), getMandelbrotVariant((String) mbrotVarComboBox.getSelectedItem()), getColouringMethod((String) colMethComboBox
                 .getSelectedItem()));
 
-        ArFLMbrotRenderer.initialize(b, p, this);
+        MandelbrotEngine.initialize(b, p, this);
         starTask = renderInProgress = true;
-        ArFLMbrotRenderer.startRendering();
+        MandelbrotEngine.startRendering();
     }//GEN-LAST:event_starButtonActionPerformed
 
     private void plusChainRender() {
-        ArFLMbrotParameters p;
+        MandelbrotEngine.Parameters p;
 
         if (plusChainPosition > plusChainLimit) {
             plusTask = false;
             return;
         }
 
-        p = new ArFLMbrotParameters(planeMinX, planeMaxX, planeMinY, planeMaxY,
+        p = new MandelbrotEngine.Parameters(planeMinX, planeMaxX, planeMinY, planeMaxY,
                 1024, 1024, 4000,
                 arbPrecCheckBox.isSelected(), Integer.parseInt(arbPrecTextField.getText()),
-                plusChainSampleSize, ArFLMbrotParameters.MandelbrotVariant.BUDDHABROT, getColouringMethod((String) colMethComboBox
+                plusChainSampleSize, MandelbrotEngine.Parameters.MandelbrotVariant.BUDDHABROT, getColouringMethod((String) colMethComboBox
                 .getSelectedItem()));
 
-        ArFLMbrotRenderer.initialize(b, p, this);
+        MandelbrotEngine.initialize(b, p, this);
         plusTask = renderInProgress = true;
-        ArFLMbrotRenderer.startRendering();
+        MandelbrotEngine.startRendering();
         plusChainPosition++;
         plusChainSampleSize += plusChainStep;
     }
@@ -540,29 +538,29 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements ArFLM
     private javax.swing.JButton starButton;
     // End of variables declaration//GEN-END:variables
 
-    private ArFLMbrotParameters.MandelbrotVariant getMandelbrotVariant(String s) {
+    private MandelbrotEngine.Parameters.MandelbrotVariant getMandelbrotVariant(String s) {
         switch (s) {
             case "Regular":
-                return ArFLMbrotParameters.MandelbrotVariant.REGULAR;
+                return MandelbrotEngine.Parameters.MandelbrotVariant.REGULAR;
             case "Buddhabrot":
-                return ArFLMbrotParameters.MandelbrotVariant.BUDDHABROT;
+                return MandelbrotEngine.Parameters.MandelbrotVariant.BUDDHABROT;
             default:
-                return ArFLMbrotParameters.MandelbrotVariant.REGULAR;
+                return MandelbrotEngine.Parameters.MandelbrotVariant.REGULAR;
         }
     }
 
-    private ArFLMbrotParameters.ColouringMethod getColouringMethod(String s) {
+    private MandelbrotEngine.Parameters.ColouringMethod getColouringMethod(String s) {
         switch (s) {
             case "Regular":
-                return ArFLMbrotParameters.ColouringMethod.REGULAR;
+                return MandelbrotEngine.Parameters.ColouringMethod.REGULAR;
             case "Red":
-                return ArFLMbrotParameters.ColouringMethod.RED;
+                return MandelbrotEngine.Parameters.ColouringMethod.RED;
             case "Green":
-                return ArFLMbrotParameters.ColouringMethod.GREEN;
+                return MandelbrotEngine.Parameters.ColouringMethod.GREEN;
             case "Blue":
-                return ArFLMbrotParameters.ColouringMethod.BLUE;
+                return MandelbrotEngine.Parameters.ColouringMethod.BLUE;
             default:
-                return ArFLMbrotParameters.ColouringMethod.REGULAR;
+                return MandelbrotEngine.Parameters.ColouringMethod.REGULAR;
         }
     }
 
@@ -623,7 +621,7 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements ArFLM
     }
 
     public void startRendering() {
-        ArFLMbrotParameters p;
+        MandelbrotEngine.Parameters p;
 
         if (autoAdjustIterLimitCheckBox.isSelected()) {
             int limit;
@@ -639,15 +637,15 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements ArFLM
         f.clearSelectionRectangle();
         b = ByteBuffer.allocateDirect(outputSize.height * outputSize.width * 4);
         setCurRenRegion(selMinX, selMaxX, selMinY, selMaxY);
-        p = new ArFLMbrotParameters(planeMinX, planeMaxX, planeMinY, planeMaxY,
+        p = new MandelbrotEngine.Parameters(planeMinX, planeMaxX, planeMinY, planeMaxY,
                 outputSize.width, outputSize.height, Integer.parseInt(maxIterTextField.getText()),
                 arbPrecCheckBox.isSelected(), Integer.parseInt(arbPrecTextField.getText()),
                 Integer.parseInt(sampleSizeTextField.getText()), getMandelbrotVariant((String) mbrotVarComboBox.getSelectedItem()), getColouringMethod((String) colMethComboBox
                 .getSelectedItem()));
 
-        ArFLMbrotRenderer.initialize(b, p, this);
+        MandelbrotEngine.initialize(b, p, this);
         renderInProgress = true;
-        ArFLMbrotRenderer.startRendering();
+        MandelbrotEngine.startRendering();
     }
 
     public void drawImage() {
@@ -727,12 +725,12 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements ArFLM
         BufferedImage temp;
         DirectColorModel c;
         WritableRaster r;
-        ArFLMbrotParameters p;
+        MandelbrotEngine.Parameters p;
         AffineTransform t;
         AffineTransformOp op;
         int[] buffer;
 
-        p = ArFLMbrotRenderer.getParameters();
+        p = MandelbrotEngine.getParameters();
         c = new DirectColorModel(32, 0x0000ff00, 0x00ff0000, 0xff000000, 0x000000ff);
         r = c.createCompatibleWritableRaster(p.imageWidth(), p.imageHeight());
 
@@ -801,13 +799,13 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements ArFLM
     }
 
     @Override
-    public void errorOcurred() {
+    public void errorOccurred() {
     }
 
     @Override
     public void statsGenerated() {
 
-        stats = ArFLMbrotRenderer.getStatistics();
+        stats = MandelbrotEngine.getStatistics();
 
         sIterLabel.setText(String.format("min: %d avg: %.2f max: %d", stats.minIterations,
                 stats.meanIterations, stats.maxIterations));
