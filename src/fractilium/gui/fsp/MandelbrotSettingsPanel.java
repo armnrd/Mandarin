@@ -1,6 +1,6 @@
 package fractilium.gui.fsp;
 
-import fractilium.Fractilium;
+import fractilium.Main;
 import fractilium.engine.MandelbrotEngine;
 import fractilium.engine.MandelbrotEngine.EventHandler;
 import java.awt.*;
@@ -38,14 +38,14 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
     private MathContext mc, mcd; // mcd is the MathContext for display values
     private BigDecimal planeMinX, planeMinY, planeMaxX, planeMaxY, planeUnitX, planeUnitY, selMinX, selMinY, selMaxX, selMaxY;
     private ByteBuffer b;
-    private Fractilium f;
+    private Main f;
     private boolean renderInProgress, starTask, plusTask;
     private MandelbrotEngine.Statistics stats;
 
     /**
      * Creates new form MandelbrotSettingsPanel
      */
-    public MandelbrotSettingsPanel(Fractilium f, Rectangle outputSize) {
+    public MandelbrotSettingsPanel(Main f, Rectangle outputSize) {
         initComponents();
         if (!outputSize.isEmpty()) {
             this.outputSize = outputSize;

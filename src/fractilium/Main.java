@@ -13,7 +13,7 @@ import javax.swing.*;
  *
  * @author Ari
  */
-public class Fractilium extends javax.swing.JFrame {
+public class Main extends javax.swing.JFrame {
 
     private Point mouseInitPos, mouseFinPos;
     private Rectangle selRect;
@@ -22,7 +22,7 @@ public class Fractilium extends javax.swing.JFrame {
     /**
      * Creates new form Fractilium
      */
-    public Fractilium() {
+    public Main() {
         initComponents();
         selRect = new Rectangle();
         zoomFactor = 1.5;
@@ -83,7 +83,7 @@ public class Fractilium extends javax.swing.JFrame {
             .addGroup(notificationAreaPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(notificationAreaLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 710, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -137,11 +137,11 @@ public class Fractilium extends javax.swing.JFrame {
         imagePanel.setLayout(imagePanelLayout);
         imagePanelLayout.setHorizontalGroup(
             imagePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 636, Short.MAX_VALUE)
+            .addGap(0, 765, Short.MAX_VALUE)
         );
         imagePanelLayout.setVerticalGroup(
             imagePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 413, Short.MAX_VALUE)
+            .addGap(0, 429, Short.MAX_VALUE)
         );
 
         jSplitPane1.setLeftComponent(imagePanel);
@@ -275,17 +275,13 @@ public class Fractilium extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(notificationAreaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 928, Short.MAX_VALUE)
-                .addContainerGap())
-            .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.TRAILING)
+            .addComponent(notificationAreaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 952, Short.MAX_VALUE)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 952, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(notificationAreaPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -410,7 +406,7 @@ public class Fractilium extends javax.swing.JFrame {
                         try {
                             ImageIO.write(p.getImageFromBuffer(), "png", fc.getSelectedFile());
                         } catch (IOException ex) {
-                            Logger.getLogger(Fractilium.class.getName()).log(Level.SEVERE, null, ex);
+                            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
                 }
@@ -472,13 +468,13 @@ public class Fractilium extends javax.swing.JFrame {
             UIManager.setLookAndFeel(
                     UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Fractilium.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            Logger.getLogger(Fractilium.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            Logger.getLogger(Fractilium.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(Fractilium.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         /*
@@ -486,7 +482,7 @@ public class Fractilium extends javax.swing.JFrame {
          */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Fractilium().setVisible(true);
+                new Main().setVisible(true);
             }
         });
     }

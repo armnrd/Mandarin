@@ -9,3 +9,5 @@
 # Netbeans Project Files
 nbproject/
 build.xml
+build/
+dist/
