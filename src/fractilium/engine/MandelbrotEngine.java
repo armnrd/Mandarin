@@ -1,8 +1,11 @@
 package fractilium.engine;
 
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
-import java.nio.ByteBuffer;
+import java.math.MathContext;
+import java.math.RoundingMode;
+import java.util.concurrent.ArrayBlockingQueue;
 
 /**
  *
@@ -14,7 +17,7 @@ public class MandelbrotEngine {
 
         public void renderingBegun();
 
-        public void regionRendered(int startIdx, int endIdx);
+        public void regionRendered(Rectangle region);
 
         public void renderingEnded();
 
@@ -76,18 +79,18 @@ public class MandelbrotEngine {
                 return n;
             }
         }
-        private final BigDecimal planeMinX, planeMaxX, planeMinY, planeMaxY;
-        private final int imgWidth, imgHeight, maxIter, prec, sampleSize;
-        private final boolean useArbPrec;
-        private final MandelbrotVariant var;
-        private final ColouringMethod colMeth;
+        private final BigDecimal planeMinX, planeMaxX, planeMinY, planeMaxY,
+                planeXUnit, planeYUnit;
+        private final int imgWidth, imgHeight, maxIters, sampleSize;
+        private final MandelbrotVariant variant;
+        private final ColouringMethod colMethod;
 
         private Parameters() {
-            planeMinX = planeMaxX = planeMinY = planeMaxY = null;
-            imgWidth = imgHeight = maxIter = prec = sampleSize = 0;
-            useArbPrec = false;
-            var = null;
-            colMeth = null;
+            planeMinX = planeMaxX = planeMinY = planeMaxY = planeXUnit
+                    = planeYUnit = null;
+            imgWidth = imgHeight = maxIters = sampleSize = 0;
+            variant = null;
+            colMethod = null;
         }
 
         public Parameters(BigDecimal plMinX, BigDecimal plMaxX, BigDecimal plMinY, BigDecimal plMaxY, int imgWidth, int imgHeight, int maxIter, boolean useArbPrec, int prec, int sampleSize, MandelbrotVariant mbrotVar, ColouringMethod colMeth) {
@@ -95,14 +98,14 @@ public class MandelbrotEngine {
             planeMaxX = plMaxX;
             planeMinY = plMinY;
             planeMaxY = plMaxY;
+            planeXUnit = plMaxX.subtract(plMinX, mathCont).divide(new BigDecimal(imgWidth, mathCont), mathCont);
+            planeYUnit = plMaxY.subtract(plMinY, mathCont).divide(new BigDecimal(imgHeight, mathCont), mathCont);
             this.imgWidth = imgWidth;
             this.imgHeight = imgHeight;
-            this.maxIter = maxIter;
-            this.useArbPrec = useArbPrec;
-            this.prec = prec; // prec is the precision in bits not decimal digits!
+            this.maxIters = maxIter;
             this.sampleSize = sampleSize;
-            this.var = mbrotVar;
-            this.colMeth = colMeth;
+            this.variant = mbrotVar;
+            this.colMethod = colMeth;
         }
 
         public String planeMinX() {
@@ -130,15 +133,7 @@ public class MandelbrotEngine {
         }
 
         public int maxIterations() {
-            return maxIter;
-        }
-
-        public int useArbitraryPrecision() {
-            return useArbPrec ? 1 : 0;
-        }
-
-        public int precision() {
-            return prec;
+            return maxIters;
         }
 
         public int sampleSize() {
@@ -146,42 +141,34 @@ public class MandelbrotEngine {
         }
 
         public int mandelbrotVariant() {
-            return var.toNumber();
+            return variant.toNumber();
         }
 
         public int colouringMethod() {
-            return colMeth.toNumber();
+            return colMethod.toNumber();
         }
     }
 
-    private static BufferedImage i;
-    private static EventHandler h;
-    private static Parameters p;
-    private static Statistics s;
-    private static int coreCount;
+    private static BufferedImage image;
+    private static EventHandler handler;
+    private static Parameters params;
+    private static Statistics stats;
+    private static MathContext mathCont;
+    private static int coreCount, threadCount;
+    private static ArrayBlockingQueue<Rectangle> queue;
 
     private void MandelbrotEngine() {
     }
 
-    public static void initialize(EventHandler h) {
-        MandelbrotEngine.h = h;
+    public static void initialize(EventHandler h, int precision) {
+        MandelbrotEngine.handler = h;
         MandelbrotEngine.coreCount = Runtime.getRuntime().availableProcessors();
-        System.out.println("MandelbrotEngine initialized.");
+        mathCont = new MathContext(precision, RoundingMode.HALF_EVEN);
     }
 
     public static void setParameters(MandelbrotEngine.Parameters p) {
-        MandelbrotEngine.p = p;
-        System.out.println("MandelbrotEngine parameters set.");
+        MandelbrotEngine.params = p;
     }
-
-    /**
-     * Stats returned have the following format: min:mean:max:points:time. The
-     * event handler handles communication between the native renderer and Java
-     * code until rendering is complete.
-     */
-    private static native String _renderMandelbrot(ByteBuffer b, String plMinX, String plMaxX,
-            String plMinY, String plMaxY, int imgWidth, int imgHeight, int maxIter,
-            int useArbPrec, int prec, int sampleSize, int mbrotVar, int colMeth);
 
     public static void changeRenderingRegion(BigDecimal plMinX, BigDecimal plMaxX, BigDecimal plMinY, BigDecimal plMaxY) {
     }
@@ -190,26 +177,92 @@ public class MandelbrotEngine {
     }
 
     public static void startRendering() {
-        Thread t;
+        new Thread(new Runnable() {
 
-        /*t = new Thread(new Runnable() {
-         @Override
-         public void run() {
-         String stats, temp[];
+            @Override
+            public void run() {
+                launchThreads();
+            }
+        }).start();
+        handler.renderingBegun();
+    }
 
-         stats = _renderMandelbrot(b, p.planeMinX(),
-         p.planeMaxX(), p.planeMinY(), p.planeMaxY(), p.imageWidth(),
-         p.imageHeight(), p.maxIterations(), p.useArbitraryPrecision(),
-         p.precision(), p.sampleSize(), p.mandelbrotVariant(), p.colouringMethod());
-         temp = stats.split(":");
-         s = new Statistics(Integer.parseInt(temp[0]), Double.parseDouble(temp[1]),
-         Integer.parseInt(temp[2]), Integer.parseInt(temp[3]), Double.parseDouble(temp[4]));
-         h.statsGenerated();
-         }
-         });
+    private static void launchThreads() {
+        image = new BufferedImage(params.imgWidth, params.imgHeight, BufferedImage.TYPE_INT_RGB);
+        int stripWidth = params.imgWidth / (coreCount * 10) + 1, resdlWidth = params.imgWidth % stripWidth;
 
-         t.start(); */
-        System.out.println("Rendering begun.");
+        int startIndex = 0;
+        queue = new ArrayBlockingQueue<>(params.imgWidth / stripWidth + 1);
+        do {
+            queue.add(new Rectangle(startIndex, 0, stripWidth, params.imgHeight));
+            startIndex += stripWidth;
+        } while (startIndex + stripWidth <= params.imgWidth);
+
+        if (resdlWidth != 0) {
+            queue.add(new Rectangle(startIndex, 0, resdlWidth, params.imgHeight));
+        }
+
+        final Object lock = new Object();
+        threadCount = 0;
+        for (int i = 1; i <= coreCount; i++) {
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    Rectangle region = queue.poll();
+                    while (region != null) {
+                        renderRegionPrimitive(region);
+                        handler.regionRendered(region);
+                        region = queue.poll();
+                    }
+
+                    if (threadCount == 1) {
+                        postProcess();
+                    }
+                    threadCount--;
+                }
+            }).start();
+            threadCount++;
+        }
+    }
+
+    private static void postProcess() {
+        handler.renderingEnded();
+    }
+
+    private static int colour(int iters) {
+        double ratio = iters / (double) params.maxIters;
+        return (int) (Math.sqrt(ratio) * ratio * (ratio / 2 + 0.5) * 0xf21f5f);
+    }
+
+    private static void renderRegionPrimitive(Rectangle region) {
+        int i, j, k;
+        double zR, cR, aR, zI, cI, aI, planeXUnit, planeYUnit, temp;
+
+        planeXUnit = params.planeXUnit.doubleValue();
+        planeYUnit = params.planeYUnit.doubleValue();
+        aR = params.planeMinX.doubleValue() + region.x * planeXUnit;
+        aI = params.planeMaxY.doubleValue() - region.y * planeYUnit;
+        for (i = 0; i < region.width; i++) {
+            for (j = 0; j < region.height; j++) {
+                zR = cR = aR + planeXUnit * i;
+                zI = cI = aI - planeYUnit * j;
+                k = 0;
+
+                while (k < params.maxIters) {
+                    if (zR * zR + zI * zI > (double) 25) {
+                        break;
+                    }
+
+                    temp = zR;
+                    zR = zR * zR - zI * zI + cR;
+                    zI = 2 * temp * zI + cI;
+                    k++;
+                }
+                
+                image.setRGB(region.x + i, region.y + j, colour(k));
+            }
+        }
     }
 
     public static void pauseRendering() {
@@ -223,17 +276,17 @@ public class MandelbrotEngine {
     public static void stopRendering() {
 
     }
-    
+
     public static BufferedImage getImage() {
-        return null;        
+        return image;
     }
 
     public static Statistics getStatistics() {
-        return s;
+        return stats;
     }
 
     public static Parameters getParameters() {
-        return p;
+        return params;
     }
 
     public static void cleanup() {

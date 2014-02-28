@@ -2,9 +2,7 @@ package fractilium.gui.fsp;
 
 import fractilium.Main;
 import fractilium.engine.MandelbrotEngine;
-import fractilium.engine.MandelbrotEngine.EventHandler;
 import java.awt.*;
-import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
 import java.awt.image.*;
 import java.io.File;
@@ -14,16 +12,9 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import javax.sound.midi.MidiSystem;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.LineUnavailableException;
-import sun.awt.image.ImageAccessException;
 
 /**
  *
@@ -35,7 +26,7 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
     private int plusChainSampleSize, plusChainStep, plusChainPosition, plusChainLimit;
     private double imageRotation;
     private Rectangle outputSize;
-    private MathContext mc, mcd; // mcd is the MathContext for display values
+    private MathContext mathCont, mathContDisp; // mcd is the MathContext for display values
     private BigDecimal planeMinX, planeMinY, planeMaxX, planeMaxY, planeUnitX, planeUnitY, selMinX, selMinY, selMaxX, selMaxY;
     private Main m;
     private boolean renderInProgress, starTask, plusTask;
@@ -54,17 +45,17 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
         }
         imageRotation = 0;
         starTask = plusTask = false;
-        mc = new MathContext(PRECISION, RoundingMode.HALF_EVEN);
-        mcd = new MathContext(4, RoundingMode.HALF_EVEN);
-        planeMinX = new BigDecimal("-2", mc);
-        planeMaxX = new BigDecimal("1", mc);
-        planeMinY = new BigDecimal("-1.5", mc);
-        planeMaxY = new BigDecimal("1.5", mc);
+        mathCont = new MathContext(PRECISION, RoundingMode.HALF_EVEN);
+        mathContDisp = new MathContext(4, RoundingMode.HALF_EVEN);
+        planeMinX = new BigDecimal("-2", mathCont);
+        planeMaxX = new BigDecimal("1", mathCont);
+        planeMinY = new BigDecimal("-1.5", mathCont);
+        planeMaxY = new BigDecimal("1.5", mathCont);
         setSelRenRegion(planeMinX, planeMaxX, planeMinY, planeMaxY);
         setCurRenRegion(planeMinX, planeMaxX, planeMinY, planeMaxY);
         this.m = m;
         stats = new MandelbrotEngine.Statistics(0, 0, 0, 0, 0);
-        MandelbrotEngine.initialize(this);
+        MandelbrotEngine.initialize(this, PRECISION);
     }
 
     /**
@@ -543,8 +534,8 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
 
     public void setOutputSize(Rectangle r) {
         outputSize = r;
-        planeUnitX = planeMaxX.subtract(planeMinX, mc).divide(new BigDecimal(outputSize.width + 1, mc), mc); // Zero output size means the output has just one pixel.
-        planeUnitY = planeMaxY.subtract(planeMinY, mc).divide(new BigDecimal(outputSize.height + 1, mc), mc); // Zero output size means the output has just one pixel.
+        planeUnitX = planeMaxX.subtract(planeMinX, mathCont).divide(new BigDecimal(outputSize.width + 1, mathCont), mathCont); // Zero output size means the output has just one pixel.
+        planeUnitY = planeMaxY.subtract(planeMinY, mathCont).divide(new BigDecimal(outputSize.height + 1, mathCont), mathCont); // Zero output size means the output has just one pixel.
         sSizeLabel.setText(r.width + "x" + r.height);
     }
 
@@ -552,27 +543,27 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
         BigDecimal selMinX, selMinY, selMaxX, selMaxY, temp1, temp2, temp3;
         double aspectRatio;
 
-        selMinX = planeMinX.add(planeUnitX.multiply(new BigDecimal(r.x, mc)), mc);
-        selMaxY = planeMaxY.subtract(planeUnitY.multiply(new BigDecimal(r.y, mc)), mc);
-        selMaxX = selMinX.add(planeUnitX.multiply(new BigDecimal(r.width + 1, mc), mc));
-        selMinY = selMaxY.subtract(planeUnitY.multiply(new BigDecimal(r.height + 1, mc), mc));
+        selMinX = planeMinX.add(planeUnitX.multiply(new BigDecimal(r.x, mathCont)), mathCont);
+        selMaxY = planeMaxY.subtract(planeUnitY.multiply(new BigDecimal(r.y, mathCont)), mathCont);
+        selMaxX = selMinX.add(planeUnitX.multiply(new BigDecimal(r.width + 1, mathCont), mathCont));
+        selMinY = selMaxY.subtract(planeUnitY.multiply(new BigDecimal(r.height + 1, mathCont), mathCont));
 
         aspectRatio = outputSize.width / (double) outputSize.height;
-        temp3 = selMaxX.subtract(selMinX, mc).divide(selMaxY.subtract(selMinY, mc), mc);
-        if (temp3.compareTo(new BigDecimal(aspectRatio, mc)) > 0) {
-            temp1 = selMaxX.subtract(selMinX, mc);
-            temp2 = selMaxY.subtract(selMinY, mc);
-            temp1 = temp1.divide(new BigDecimal(aspectRatio, mc), mc).subtract(temp2, mc);
-            temp1 = temp1.divide(new BigDecimal(2, mc), mc);
-            selMinY = selMinY.subtract(temp1, mc);
-            selMaxY = selMaxY.add(temp1, mc);
-        } else if (temp3.compareTo(new BigDecimal(aspectRatio, mc)) < 0) {
-            temp1 = selMaxX.subtract(selMinX, mc);
-            temp2 = selMaxY.subtract(selMinY, mc);
-            temp1 = temp2.multiply(new BigDecimal(aspectRatio, mc), mc).subtract(temp1, mc);
-            temp1 = temp1.divide(new BigDecimal(2, mc), mc);
-            selMinX = selMinX.subtract(temp1, mc);
-            selMaxX = selMaxX.add(temp1, mc);
+        temp3 = selMaxX.subtract(selMinX, mathCont).divide(selMaxY.subtract(selMinY, mathCont), mathCont);
+        if (temp3.compareTo(new BigDecimal(aspectRatio, mathCont)) > 0) {
+            temp1 = selMaxX.subtract(selMinX, mathCont);
+            temp2 = selMaxY.subtract(selMinY, mathCont);
+            temp1 = temp1.divide(new BigDecimal(aspectRatio, mathCont), mathCont).subtract(temp2, mathCont);
+            temp1 = temp1.divide(new BigDecimal(2, mathCont), mathCont);
+            selMinY = selMinY.subtract(temp1, mathCont);
+            selMaxY = selMaxY.add(temp1, mathCont);
+        } else if (temp3.compareTo(new BigDecimal(aspectRatio, mathCont)) < 0) {
+            temp1 = selMaxX.subtract(selMinX, mathCont);
+            temp2 = selMaxY.subtract(selMinY, mathCont);
+            temp1 = temp2.multiply(new BigDecimal(aspectRatio, mathCont), mathCont).subtract(temp1, mathCont);
+            temp1 = temp1.divide(new BigDecimal(2, mathCont), mathCont);
+            selMinX = selMinX.subtract(temp1, mathCont);
+            selMaxX = selMaxX.add(temp1, mathCont);
         }
         setSelRenRegion(selMinX, selMaxX, selMinY, selMaxY);
     }
@@ -582,10 +573,10 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
         this.planeMaxX = planeMaxX;
         this.planeMinY = planeMinY;
         this.planeMaxY = planeMaxY;
-        planeUnitX = planeMaxX.subtract(planeMinX, mc).divide(new BigDecimal(outputSize.width + 1, mc), mc); // Zero output size means the output has just one pixel.
-        planeUnitY = planeMaxY.subtract(planeMinY, mc).divide(new BigDecimal(outputSize.height + 1, mc), mc); // Zero output size means the output has just one pixel.
-        curRenRegXLabel.setText("X: " + planeMinX.round(mcd).toEngineeringString() + " + " + planeMaxX.subtract(planeMinX, mc).round(mcd).toEngineeringString());
-        curRenRegYLabel.setText("Y: " + planeMinY.round(mcd).toEngineeringString() + " + " + planeMaxY.subtract(planeMinY, mc).round(mcd).toEngineeringString());
+        planeUnitX = planeMaxX.subtract(planeMinX, mathCont).divide(new BigDecimal(outputSize.width + 1, mathCont), mathCont); // Zero output size means the output has just one pixel.
+        planeUnitY = planeMaxY.subtract(planeMinY, mathCont).divide(new BigDecimal(outputSize.height + 1, mathCont), mathCont); // Zero output size means the output has just one pixel.
+        curRenRegXLabel.setText("X: " + planeMinX.round(mathContDisp).toEngineeringString() + " + " + planeMaxX.subtract(planeMinX, mathCont).round(mathContDisp).toEngineeringString());
+        curRenRegYLabel.setText("Y: " + planeMinY.round(mathContDisp).toEngineeringString() + " + " + planeMaxY.subtract(planeMinY, mathCont).round(mathContDisp).toEngineeringString());
     }
 
     private void setSelRenRegion(BigDecimal selMinX, BigDecimal selMaxX, BigDecimal selMinY, BigDecimal selMaxY) {
@@ -593,8 +584,8 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
         this.selMaxX = selMaxX;
         this.selMinY = selMinY;
         this.selMaxY = selMaxY;
-        selRenRegXLabel.setText("X: " + selMinX.round(mcd).toEngineeringString() + " + " + selMaxX.subtract(selMinX, mc).round(mcd).toEngineeringString());
-        selRenRegYLabel.setText("Y: " + selMinY.round(mcd).toEngineeringString() + " + " + selMaxY.subtract(selMinY, mc).round(mcd).toEngineeringString());
+        selRenRegXLabel.setText("X: " + selMinX.round(mathContDisp).toEngineeringString() + " + " + selMaxX.subtract(selMinX, mathCont).round(mathContDisp).toEngineeringString());
+        selRenRegYLabel.setText("Y: " + selMinY.round(mathContDisp).toEngineeringString() + " + " + selMaxY.subtract(selMinY, mathCont).round(mathContDisp).toEngineeringString());
     }
 
     public void startRendering() {
@@ -691,25 +682,25 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
         rY = p.y / (double) outputSize.height;
         aspectRatio = outputSize.width / (double) outputSize.height;
 
-        sizeX = planeMaxX.subtract(planeMinX, mc).divide(new BigDecimal(zoomFactor, mc),
-                mc);
-        sizeY = planeMaxY.subtract(planeMinY, mc).divide(new BigDecimal(zoomFactor, mc),
-                mc);
-        if (sizeX.divide(sizeY, mc).compareTo(new BigDecimal(aspectRatio, mc)) > 0) {
-            sizeY = sizeX.divide(new BigDecimal(aspectRatio, mc), mc);
+        sizeX = planeMaxX.subtract(planeMinX, mathCont).divide(new BigDecimal(zoomFactor, mathCont),
+                mathCont);
+        sizeY = planeMaxY.subtract(planeMinY, mathCont).divide(new BigDecimal(zoomFactor, mathCont),
+                mathCont);
+        if (sizeX.divide(sizeY, mathCont).compareTo(new BigDecimal(aspectRatio, mathCont)) > 0) {
+            sizeY = sizeX.divide(new BigDecimal(aspectRatio, mathCont), mathCont);
         } else {
-            sizeX = sizeY.multiply(new BigDecimal(aspectRatio, mc), mc);
+            sizeX = sizeY.multiply(new BigDecimal(aspectRatio, mathCont), mathCont);
         }
 
-        x = planeMinX.add(planeUnitX.multiply(new BigDecimal(p.x, mc), mc), mc).subtract(sizeX.multiply(new BigDecimal(rX, mc), mc), mc);
-        y = planeMaxY.subtract(planeUnitY.multiply(new BigDecimal(p.y, mc), mc), mc).subtract(sizeY.multiply(new BigDecimal(1 - rY, mc), mc), mc);
+        x = planeMinX.add(planeUnitX.multiply(new BigDecimal(p.x, mathCont), mathCont), mathCont).subtract(sizeX.multiply(new BigDecimal(rX, mathCont), mathCont), mathCont);
+        y = planeMaxY.subtract(planeUnitY.multiply(new BigDecimal(p.y, mathCont), mathCont), mathCont).subtract(sizeY.multiply(new BigDecimal(1 - rY, mathCont), mathCont), mathCont);
 
-        setSelRenRegion(x, x.add(sizeX, mc), y, y.add(sizeY, mc));
+        setSelRenRegion(x, x.add(sizeX, mathCont), y, y.add(sizeY, mathCont));
         startRendering();
     }
 
     public void resetRenderingRegion() {
-        setSelRenRegion(new BigDecimal("-2.0", mc), new BigDecimal("1.0", mc), new BigDecimal("-1.5", mc), new BigDecimal("1.5", mc));
+        setSelRenRegion(new BigDecimal("-2.0", mathCont), new BigDecimal("1.0", mathCont), new BigDecimal("-1.5", mathCont), new BigDecimal("1.5", mathCont));
     }
 
     private void plusChainRender() {
@@ -749,10 +740,12 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
     @Override
     public void renderingBegun() {
         m.getProgressBar().setIndeterminate(true);
+        m.getNotificationAreaLabel().setText("");
     }
 
     @Override
-    public void regionRendered(int startIdx, int endIdx) {
+    public void regionRendered(Rectangle region) {
+        drawImage();
     }
 
     @Override
@@ -806,8 +799,8 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
                 stats.meanIterations, stats.maxIterations));
         sConvLabel.setText(String.format("conv: %d div: %d", stats.convergentPoints,
                 outputSize.width * outputSize.height - stats.convergentPoints));
-        sScaleLabel.setText(new BigDecimal(3, mc).divide(planeMaxX.subtract(planeMinX, mc),
-                mcd).toString() + "x");
-        m.getNotificationAreaLabel().setText(String.format("Rendering time: %fs", stats.renderingTime));
+        sScaleLabel.setText(new BigDecimal(3, mathCont).divide(planeMaxX.subtract(planeMinX, mathCont),
+                mathContDisp).toString() + "x");
+        m.getNotificationAreaLabel().setText(String.format("Rendered in %f s", stats.renderingTime));
     }
 }

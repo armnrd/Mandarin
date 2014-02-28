@@ -11,3 +11,6 @@ nbproject/
 build.xml
 build/
 dist/
+
+# Miscellaneous
+*.log
