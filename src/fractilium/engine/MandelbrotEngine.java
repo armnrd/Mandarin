@@ -1,5 +1,6 @@
 package fractilium.engine;
 
+import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 
@@ -153,11 +154,26 @@ public class MandelbrotEngine {
         }
     }
 
-    private static ByteBuffer b;
+    private static BufferedImage i;
     private static EventHandler h;
     private static Parameters p;
     private static Statistics s;
-    
+    private static int coreCount;
+
+    private void MandelbrotEngine() {
+    }
+
+    public static void initialize(EventHandler h) {
+        MandelbrotEngine.h = h;
+        MandelbrotEngine.coreCount = Runtime.getRuntime().availableProcessors();
+        System.out.println("MandelbrotEngine initialized.");
+    }
+
+    public static void setParameters(MandelbrotEngine.Parameters p) {
+        MandelbrotEngine.p = p;
+        System.out.println("MandelbrotEngine parameters set.");
+    }
+
     /**
      * Stats returned have the following format: min:mean:max:points:time. The
      * event handler handles communication between the native renderer and Java
@@ -166,13 +182,6 @@ public class MandelbrotEngine {
     private static native String _renderMandelbrot(ByteBuffer b, String plMinX, String plMaxX,
             String plMinY, String plMaxY, int imgWidth, int imgHeight, int maxIter,
             int useArbPrec, int prec, int sampleSize, int mbrotVar, int colMeth);
-
-    public static void initialize(ByteBuffer b, Parameters p, EventHandler h) {
-        MandelbrotEngine.b = b;
-        MandelbrotEngine.p = p;
-        MandelbrotEngine.h = h;
-        System.out.println("MandelbrotEngine initialized.");
-    }
 
     public static void changeRenderingRegion(BigDecimal plMinX, BigDecimal plMaxX, BigDecimal plMinY, BigDecimal plMaxY) {
     }
@@ -184,35 +193,39 @@ public class MandelbrotEngine {
         Thread t;
 
         /*t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String stats, temp[];
+         @Override
+         public void run() {
+         String stats, temp[];
 
-                stats = _renderMandelbrot(b, p.planeMinX(),
-                        p.planeMaxX(), p.planeMinY(), p.planeMaxY(), p.imageWidth(),
-                        p.imageHeight(), p.maxIterations(), p.useArbitraryPrecision(),
-                        p.precision(), p.sampleSize(), p.mandelbrotVariant(), p.colouringMethod());
-                temp = stats.split(":");
-                s = new Statistics(Integer.parseInt(temp[0]), Double.parseDouble(temp[1]),
-                        Integer.parseInt(temp[2]), Integer.parseInt(temp[3]), Double.parseDouble(temp[4]));
-                h.statsGenerated();
-            }
-        });
+         stats = _renderMandelbrot(b, p.planeMinX(),
+         p.planeMaxX(), p.planeMinY(), p.planeMaxY(), p.imageWidth(),
+         p.imageHeight(), p.maxIterations(), p.useArbitraryPrecision(),
+         p.precision(), p.sampleSize(), p.mandelbrotVariant(), p.colouringMethod());
+         temp = stats.split(":");
+         s = new Statistics(Integer.parseInt(temp[0]), Double.parseDouble(temp[1]),
+         Integer.parseInt(temp[2]), Integer.parseInt(temp[3]), Double.parseDouble(temp[4]));
+         h.statsGenerated();
+         }
+         });
 
-        t.start(); */
+         t.start(); */
         System.out.println("Rendering begun.");
     }
-    
+
     public static void pauseRendering() {
-        
+
     }
-    
+
     public static void resumeRendering() {
-        
+
+    }
+
+    public static void stopRendering() {
+
     }
     
-    public static void stopRendering() {
-        
+    public static BufferedImage getImage() {
+        return null;        
     }
 
     public static Statistics getStatistics() {
@@ -226,6 +239,7 @@ public class MandelbrotEngine {
     public static void cleanup() {
     }
 
-    private MandelbrotEngine() {
+    private void renderMandebrotPrimitive() {
+
     }
 }
