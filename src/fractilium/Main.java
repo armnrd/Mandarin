@@ -402,12 +402,7 @@ public class Main extends javax.swing.JFrame {
             for (Component c : settingsPanel.getComponents()) {
                 if (c.isVisible()) {
                     if (c instanceof MandelbrotSettingsPanel) {
-                        MandelbrotSettingsPanel p = (MandelbrotSettingsPanel) c;
-                        try {
-                            ImageIO.write(p.getImageFromBuffer(), "png", fc.getSelectedFile());
-                        } catch (IOException ex) {
-                            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                        ((MandelbrotSettingsPanel) c).writeImageToFile(fc.getSelectedFile());
                     }
                 }
             }
