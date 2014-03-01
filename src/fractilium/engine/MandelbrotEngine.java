@@ -2,10 +2,13 @@ package fractilium.engine;
 
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -28,8 +31,8 @@ public class MandelbrotEngine {
 
     public static class Statistics {
 
-        public final int minIterations, maxIterations, convergentPoints;
-        public final double meanIterations, renderingTime;
+        public int minIterations, maxIterations, convergentPoints;
+        public double meanIterations, renderingTime;
 
         private Statistics() {
             minIterations = maxIterations = convergentPoints = 0;
@@ -107,55 +110,15 @@ public class MandelbrotEngine {
             this.variant = mbrotVar;
             this.colMethod = colMeth;
         }
-
-        public String planeMinX() {
-            return planeMinX.toString();
-        }
-
-        public String planeMaxX() {
-            return planeMaxX.toString();
-        }
-
-        public String planeMinY() {
-            return planeMinY.toString();
-        }
-
-        public String planeMaxY() {
-            return planeMaxY.toString();
-        }
-
-        public int imageWidth() {
-            return imgWidth;
-        }
-
-        public int imageHeight() {
-            return imgHeight;
-        }
-
-        public int maxIterations() {
-            return maxIters;
-        }
-
-        public int sampleSize() {
-            return sampleSize;
-        }
-
-        public int mandelbrotVariant() {
-            return variant.toNumber();
-        }
-
-        public int colouringMethod() {
-            return colMethod.toNumber();
-        }
     }
 
+    private static int coreCount, threadCount, pixelArray[];
     private static BufferedImage image;
     private static EventHandler handler;
     private static Parameters params;
     private static Statistics stats;
     private static MathContext mathCont;
-    private static int coreCount, threadCount;
-    private static ArrayBlockingQueue<Rectangle> queue;
+    private static ArrayBlockingQueue<Rectangle> regionQueue;
 
     private void MandelbrotEngine() {
     }
@@ -170,54 +133,95 @@ public class MandelbrotEngine {
         MandelbrotEngine.params = p;
     }
 
-    public static void changeRenderingRegion(BigDecimal plMinX, BigDecimal plMaxX, BigDecimal plMinY, BigDecimal plMaxY) {
-    }
-
-    public static void changeColouringMethod(Parameters.ColouringMethod colMeth) {
-    }
-
     public static void startRendering() {
         new Thread(new Runnable() {
 
             @Override
             public void run() {
-                launchThreads();
+                Object lock = new Object();
+                image = new BufferedImage(params.imgWidth, params.imgHeight, BufferedImage.TYPE_INT_RGB);
+                pixelArray = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+                stats = new Statistics(params.maxIters, 0, 0, 0, System.nanoTime());
+                launchThreads(lock);
+                try {
+                    synchronized (lock) {
+                        lock.wait();
+                    }
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(MandelbrotEngine.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                stats.renderingTime = System.nanoTime() - stats.renderingTime;
+                stats.renderingTime /= 1000000;
+                stats.meanIterations /= params.imgWidth * params.imgHeight;
+                postProcess();
+                handler.renderingEnded();
+                handler.statsGenerated();
             }
         }).start();
         handler.renderingBegun();
     }
 
-    private static void launchThreads() {
-        image = new BufferedImage(params.imgWidth, params.imgHeight, BufferedImage.TYPE_INT_RGB);
+    public static void pauseRendering() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public static void resumeRendering() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public static void stopRendering() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public static BufferedImage getImage() {
+        return image;
+    }
+
+    public static Statistics getStatistics() {
+        return stats;
+    }
+
+    public static void cleanup() {
+        image = null;
+        pixelArray = null;
+        handler = null;
+        params = null;
+        stats = null;
+        mathCont = null;
+        regionQueue = null;
+    }
+
+    private static void launchThreads(final Object lock) {
         int stripWidth = params.imgWidth / (coreCount * 10) + 1, resdlWidth = params.imgWidth % stripWidth;
 
         int startIndex = 0;
-        queue = new ArrayBlockingQueue<>(params.imgWidth / stripWidth + 1);
+        regionQueue = new ArrayBlockingQueue<>(params.imgWidth / stripWidth + 1);
         do {
-            queue.add(new Rectangle(startIndex, 0, stripWidth, params.imgHeight));
+            regionQueue.add(new Rectangle(startIndex, 0, stripWidth, params.imgHeight));
             startIndex += stripWidth;
         } while (startIndex + stripWidth <= params.imgWidth);
 
         if (resdlWidth != 0) {
-            queue.add(new Rectangle(startIndex, 0, resdlWidth, params.imgHeight));
+            regionQueue.add(new Rectangle(startIndex, 0, resdlWidth, params.imgHeight));
         }
 
-        final Object lock = new Object();
         threadCount = 0;
         for (int i = 1; i <= coreCount; i++) {
             new Thread(new Runnable() {
 
                 @Override
                 public void run() {
-                    Rectangle region = queue.poll();
+                    Rectangle region = regionQueue.poll();
                     while (region != null) {
                         renderRegionPrimitive(region);
                         handler.regionRendered(region);
-                        region = queue.poll();
+                        region = regionQueue.poll();
                     }
 
                     if (threadCount == 1) {
-                        postProcess();
+                        synchronized (lock) {
+                            lock.notify();
+                        }
                     }
                     threadCount--;
                 }
@@ -227,10 +231,10 @@ public class MandelbrotEngine {
     }
 
     private static void postProcess() {
-        handler.renderingEnded();
+        
     }
 
-    private static int colour(int iters) {
+    private static int pixelColour(int iters) {
         double ratio = iters / (double) params.maxIters;
         return (int) (Math.sqrt(ratio) * ratio * (ratio / 2 + 0.5) * 0xf21f5f);
     }
@@ -251,6 +255,13 @@ public class MandelbrotEngine {
 
                 while (k < params.maxIters) {
                     if (zR * zR + zI * zI > (double) 25) {
+                        if (k < stats.minIterations) {
+                            stats.minIterations = k;
+                        } else if (k > stats.maxIterations) {
+                            stats.maxIterations = k;
+                        }
+                        // Prevent the value of convergentPoints from increasing.
+                        stats.convergentPoints--;
                         break;
                     }
 
@@ -259,40 +270,11 @@ public class MandelbrotEngine {
                     zI = 2 * temp * zI + cI;
                     k++;
                 }
-                
-                image.setRGB(region.x + i, region.y + j, colour(k));
+                stats.meanIterations += k;
+                stats.convergentPoints++;
+                pixelArray[(region.y + j) * params.imgWidth + region.x + i] = pixelColour(k);
             }
         }
-    }
-
-    public static void pauseRendering() {
-
-    }
-
-    public static void resumeRendering() {
-
-    }
-
-    public static void stopRendering() {
-
-    }
-
-    public static BufferedImage getImage() {
-        return image;
-    }
-
-    public static Statistics getStatistics() {
-        return stats;
-    }
-
-    public static Parameters getParameters() {
-        return params;
-    }
-
-    public static void cleanup() {
-    }
-
-    private void renderMandebrotPrimitive() {
 
     }
 }
