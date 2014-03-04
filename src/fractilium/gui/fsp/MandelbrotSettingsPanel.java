@@ -22,8 +22,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -38,14 +36,14 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
         
     }
     
-    private static final int PRECISION = 200;
-    private int plusChainSampleSize, plusChainStep, plusChainPosition, plusChainLimit;
+    private static final int MAX_PRECISION = 200;
     private double imageRotation;
     private Rectangle outputSize;
-    private MathContext mathCont, mathContDisp; // mcd is the MathContext for display values
-    private BigDecimal planeMinX, planeMinY, planeMaxX, planeMaxY, planeUnitX, planeUnitY, selMinX, selMinY, selMaxX, selMaxY;
+    private MathContext mathCont, mathContDisp;
+    private BigDecimal planeMinX, planeMinY, planeMaxX, planeMaxY, planeUnitX,
+            planeUnitY, selMinX, selMinY, selMaxX, selMaxY;
     private Main m;
-    private boolean renderInProgress, starTask, plusTask;
+    private boolean renderInProgress;
     private MandelbrotEngine.Statistics stats;
 
     /**
@@ -60,8 +58,7 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
 
         }
         imageRotation = 0;
-        starTask = plusTask = false;
-        mathCont = new MathContext(PRECISION, RoundingMode.HALF_EVEN);
+        mathCont = new MathContext(MAX_PRECISION, RoundingMode.HALF_EVEN);
         mathContDisp = new MathContext(4, RoundingMode.HALF_EVEN);
         planeMinX = new BigDecimal("-2", mathCont);
         planeMaxX = new BigDecimal("1", mathCont);
@@ -71,7 +68,7 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
         setCurRenRegion(planeMinX, planeMaxX, planeMinY, planeMaxY);
         this.m = m;
         stats = new MandelbrotEngine.Statistics(0, 0, 0, 0, 0);
-        MandelbrotEngine.initialize(this, PRECISION);
+        MandelbrotEngine.initialize(this, MAX_PRECISION);
     }
 
     private MandelbrotEngine.Parameters.MandelbrotVariant getMandelbrotVariant(String s) {
@@ -102,8 +99,10 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
 
     public void setOutputSize(Rectangle r) {
         outputSize = r;
-        planeUnitX = planeMaxX.subtract(planeMinX, mathCont).divide(new BigDecimal(outputSize.width + 1, mathCont), mathCont); // Zero output size means the output has just one pixel.
-        planeUnitY = planeMaxY.subtract(planeMinY, mathCont).divide(new BigDecimal(outputSize.height + 1, mathCont), mathCont); // Zero output size means the output has just one pixel.
+        planeUnitX = planeMaxX.subtract(planeMinX, mathCont).divide(new BigDecimal(
+                outputSize.width, mathCont), mathCont);
+        planeUnitY = planeMaxY.subtract(planeMinY, mathCont).divide(new BigDecimal(
+                outputSize.height, mathCont), mathCont);
         sSizeLabel.setText(r.width + "x" + r.height);
     }
 
@@ -157,6 +156,7 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
     }
 
     public void startRendering() {
+        renderInProgress = true;
         MandelbrotEngine.Parameters p;
 
         if (autoAdjustIterLimitCheckBox.isSelected()) {
@@ -174,12 +174,10 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
         setCurRenRegion(selMinX, selMaxX, selMinY, selMaxY);
         p = new MandelbrotEngine.Parameters(planeMinX, planeMaxX, planeMinY, planeMaxY,
                 outputSize.width, outputSize.height, Integer.parseInt(maxIterTextField.getText()),
-                arbPrecCheckBox.isSelected(), Integer.parseInt(arbPrecTextField.getText()),
                 Integer.parseInt(sampleSizeTextField.getText()), getMandelbrotVariant((String) mbrotVarComboBox.getSelectedItem()), getColouringMethod((String) colMethComboBox
                         .getSelectedItem()));
 
         MandelbrotEngine.setParameters(p);
-        renderInProgress = true;
         MandelbrotEngine.startRendering();
     }
 
@@ -271,26 +269,6 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
         setSelRenRegion(new BigDecimal("-2.0", mathCont), new BigDecimal("1.0", mathCont), new BigDecimal("-1.5", mathCont), new BigDecimal("1.5", mathCont));
     }
 
-    private void plusChainRender() {
-        MandelbrotEngine.Parameters p;
-
-        if (plusChainPosition > plusChainLimit) {
-            plusTask = false;
-            return;
-        }
-
-        p = new MandelbrotEngine.Parameters(planeMinX, planeMaxX, planeMinY, planeMaxY,
-                1024, 1024, 4000,
-                arbPrecCheckBox.isSelected(), Integer.parseInt(arbPrecTextField.getText()),
-                plusChainSampleSize, MandelbrotEngine.Parameters.MandelbrotVariant.BUDDHABROT, getColouringMethod((String) colMethComboBox
-                        .getSelectedItem()));
-
-        plusTask = renderInProgress = true;
-        MandelbrotEngine.startRendering();
-        plusChainPosition++;
-        plusChainSampleSize += plusChainStep;
-    }
-
     public void writeImageToFile(File f) {
         BufferedImage i;
 
@@ -318,37 +296,6 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
 
     @Override
     public void renderingEnded() {
-        if (starTask) {
-            try {
-                try {
-                    ImageIO.write(MandelbrotEngine.getImage(), "png", new File(new URI("file:///home/androkot/fractal.png")));
-                    m.getProgressBar().setIndeterminate(false);
-                    renderInProgress = starTask = false;
-                    return;
-                } catch (URISyntaxException ex) {
-                    Logger.getLogger(MandelbrotSettingsPanel.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(MandelbrotSettingsPanel.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } else if (plusTask) {
-            try {
-                try {
-                    ImageIO.write(MandelbrotEngine.getImage(), "png", new File(new URI(String
-                            .format("file:///home/androkot/Scratch/Fractilium/buddha/frames/%d.png",
-                                    plusChainPosition - 1))));
-                    m.getProgressBar().setIndeterminate(false);
-                    renderInProgress = plusTask = false;
-                    drawImage();
-                    plusChainRender();
-                    return;
-                } catch (URISyntaxException ex) {
-                    Logger.getLogger(MandelbrotSettingsPanel.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(MandelbrotSettingsPanel.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
         drawImage();
         m.getProgressBar().setIndeterminate(false);
         m.getNotificationAreaLabel().setText("Rendered image");
@@ -365,10 +312,6 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
 
         stats = MandelbrotEngine.getStatistics();
 
-        sIterLabel.setText(String.format("min: %d avg: %.2f max: %d", stats.minIterations,
-                stats.meanIterations, stats.maxIterations));
-        sConvLabel.setText(String.format("conv: %d div: %d", stats.convergentPoints,
-                outputSize.width * outputSize.height - stats.convergentPoints));
         sScaleLabel.setText(new BigDecimal(3, mathCont).divide(planeMaxX.subtract(planeMinX, mathCont),
                 mathContDisp).toString() + "x");
         m.getNotificationAreaLabel().setText(String.format("Rendered in %.3f ms", stats.renderingTime));
@@ -388,18 +331,12 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
         jLabel2 = new javax.swing.JLabel();
         curRenRegXLabel = new javax.swing.JLabel();
         curRenRegYLabel = new javax.swing.JLabel();
-        starButton = new javax.swing.JButton();
         selRenRegYLabel = new javax.swing.JLabel();
         selRenRegXLabel = new javax.swing.JLabel();
-        plusButton = new javax.swing.JButton();
-        minusButton = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         maxIterTextField = new javax.swing.JTextField();
-        arbPrecCheckBox = new javax.swing.JCheckBox();
         aaCheckBox = new javax.swing.JCheckBox();
-        arbPrecTextField = new javax.swing.JTextField();
-        arbPrecLabel = new javax.swing.JLabel();
         sampleSizeTextField = new javax.swing.JTextField();
         sampleSizeLabel = new javax.swing.JLabel();
         autoAdjustIterLimitCheckBox = new javax.swing.JCheckBox();
@@ -409,12 +346,8 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
         mbrotVarComboBox = new javax.swing.JComboBox();
         colMethComboBox = new javax.swing.JComboBox();
         jPanel4 = new javax.swing.JPanel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         sSizeLabel = new javax.swing.JLabel();
-        sIterLabel = new javax.swing.JLabel();
-        sConvLabel = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         sScaleLabel = new javax.swing.JLabel();
         drawButton = new javax.swing.JButton();
@@ -429,25 +362,9 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
 
         curRenRegYLabel.setText("0 + 0");
 
-        starButton.setText("*");
-        starButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                starButtonActionPerformed(evt);
-            }
-        });
-
         selRenRegYLabel.setText("0 + 0");
 
         selRenRegXLabel.setText("0 + 0");
-
-        plusButton.setText("+");
-        plusButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                plusButtonActionPerformed(evt);
-            }
-        });
-
-        minusButton.setText("-");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -468,13 +385,6 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
                                     .addComponent(curRenRegXLabel, javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(curRenRegYLabel, javax.swing.GroupLayout.Alignment.TRAILING)))
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(starButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(plusButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(minusButton)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel2)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(selRenRegXLabel)))))
@@ -493,13 +403,7 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
                     .addComponent(selRenRegXLabel)
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(selRenRegYLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(starButton)
-                    .addComponent(plusButton)
-                    .addComponent(minusButton))
-                .addContainerGap())
+                .addComponent(selRenRegYLabel))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Renderer Settings"));
@@ -507,14 +411,6 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
         jLabel5.setText("Max Iterations");
 
         maxIterTextField.setText("50");
-
-        arbPrecCheckBox.setText("Arbitrary Precision");
-        arbPrecCheckBox.setEnabled(false);
-        arbPrecCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                arbPrecCheckBoxItemStateChanged(evt);
-            }
-        });
 
         aaCheckBox.setText("Anti-aliasing");
         aaCheckBox.setEnabled(false);
@@ -524,13 +420,12 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
             }
         });
 
-        arbPrecTextField.setText("200");
-        arbPrecTextField.setEnabled(false);
-
-        arbPrecLabel.setText("Bits");
-        arbPrecLabel.setEnabled(false);
-
         sampleSizeTextField.setText("100000");
+        sampleSizeTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sampleSizeTextFieldActionPerformed(evt);
+            }
+        });
 
         sampleSizeLabel.setText("Sample Size");
 
@@ -544,28 +439,18 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(arbPrecCheckBox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(arbPrecLabel))
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(aaCheckBox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(sampleSizeLabel)))
+                        .addComponent(aaCheckBox)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(sampleSizeLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(arbPrecTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                                .addComponent(sampleSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap())))
+                        .addComponent(sampleSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel5)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(autoAdjustIterLimitCheckBox)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(maxIterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+                        .addComponent(maxIterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -578,12 +463,7 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(aaCheckBox)
                     .addComponent(sampleSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(sampleSizeLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(arbPrecCheckBox)
-                    .addComponent(arbPrecTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(arbPrecLabel)))
+                    .addComponent(sampleSizeLabel)))
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Algorithms"));
@@ -625,24 +505,11 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
 
         jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Statistics"));
 
-        jLabel6.setText("Iterations");
-        jLabel6.setAlignmentX(0.5F);
-
-        jLabel9.setText("Convergence");
-
         jLabel3.setText("Size");
 
         sSizeLabel.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
         sSizeLabel.setText("0x0");
         sSizeLabel.setPreferredSize(new java.awt.Dimension(22, 14));
-
-        sIterLabel.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
-        sIterLabel.setText("min: 0 avg: 0 max: 0");
-        sIterLabel.setPreferredSize(new java.awt.Dimension(101, 14));
-
-        sConvLabel.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
-        sConvLabel.setText("con: 0 div: 0");
-        sConvLabel.setPreferredSize(new java.awt.Dimension(62, 14));
 
         jLabel4.setText("Scale");
 
@@ -656,42 +523,24 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel6)
-                            .addComponent(jLabel9)
-                            .addComponent(sIterLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(sConvLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(sSizeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(sScaleLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(sSizeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(sScaleLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(sSizeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(sScaleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel6)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(sIterLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel9)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(sConvLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jLabel4)))
         );
 
         drawButton.setMnemonic('D');
@@ -729,9 +578,9 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 188, Short.MAX_VALUE)
                 .addComponent(drawButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -745,49 +594,18 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
             }
 	}//GEN-LAST:event_aaCheckBoxItemStateChanged
 
-	private void arbPrecCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_arbPrecCheckBoxItemStateChanged
-            if (arbPrecCheckBox.isSelected()) {
-                arbPrecLabel.setEnabled(true);
-                arbPrecTextField.setEnabled(true);
-            } else {
-                arbPrecLabel.setEnabled(false);
-                arbPrecTextField.setEnabled(false);
-            }
-	}//GEN-LAST:event_arbPrecCheckBoxItemStateChanged
-
     private void drawButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_drawButtonActionPerformed
         if (!renderInProgress) {
             startRendering();
         }
     }//GEN-LAST:event_drawButtonActionPerformed
 
-    private void starButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_starButtonActionPerformed
-        MandelbrotEngine.Parameters p;
+    private void sampleSizeTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sampleSizeTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_sampleSizeTextFieldActionPerformed
 
-        setCurRenRegion(selMinX, selMaxX, selMinY, selMaxY);
-        p = new MandelbrotEngine.Parameters(planeMinX, planeMaxX, planeMinY, planeMaxY,
-                2000, 2000, Integer.parseInt(maxIterTextField.getText()),
-                arbPrecCheckBox.isSelected(), Integer.parseInt(arbPrecTextField.getText()),
-                Integer.parseInt(sampleSizeTextField.getText()), getMandelbrotVariant((String) mbrotVarComboBox.getSelectedItem()), getColouringMethod((String) colMethComboBox
-                        .getSelectedItem()));
-
-        starTask = renderInProgress = true;
-        MandelbrotEngine.startRendering();
-    }//GEN-LAST:event_starButtonActionPerformed
-
-    private void plusButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_plusButtonActionPerformed
-        plusChainSampleSize = 513300;
-        plusChainStep = 100;
-        plusChainPosition = 7224;
-        plusChainLimit = 100000;
-
-        plusChainRender();
-    }//GEN-LAST:event_plusButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox aaCheckBox;
-    private javax.swing.JCheckBox arbPrecCheckBox;
-    private javax.swing.JLabel arbPrecLabel;
-    private javax.swing.JTextField arbPrecTextField;
     private javax.swing.JCheckBox autoAdjustIterLimitCheckBox;
     private javax.swing.JComboBox colMethComboBox;
     private javax.swing.JLabel curRenRegXLabel;
@@ -800,24 +618,17 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JTextField maxIterTextField;
     private javax.swing.JComboBox mbrotVarComboBox;
-    private javax.swing.JButton minusButton;
-    private javax.swing.JButton plusButton;
-    private javax.swing.JLabel sConvLabel;
-    private javax.swing.JLabel sIterLabel;
     private javax.swing.JLabel sScaleLabel;
     private javax.swing.JLabel sSizeLabel;
     private javax.swing.JLabel sampleSizeLabel;
     private javax.swing.JTextField sampleSizeTextField;
     private javax.swing.JLabel selRenRegXLabel;
     private javax.swing.JLabel selRenRegYLabel;
-    private javax.swing.JButton starButton;
     // End of variables declaration//GEN-END:variables
 }

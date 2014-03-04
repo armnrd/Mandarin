@@ -14,10 +14,8 @@ package fractilium;
 import fractilium.gui.fsp.MandelbrotSettingsPanel;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
 /**
@@ -35,9 +33,17 @@ public class Main extends javax.swing.JFrame {
      */
     public Main() {
         initComponents();
-        selRect = new Rectangle();
+        selRect = imagePanel.getBounds();
         zoomFactor = 1.5;
-
+        for (Component c : settingsPanel.getComponents()) {
+                if (c.isVisible()) {
+                    if (c instanceof MandelbrotSettingsPanel) {
+                        MandelbrotSettingsPanel p = (MandelbrotSettingsPanel) c;
+                        p.setOutputSize(imagePanel.getBounds());
+                        p.startRendering();
+                    }
+                }
+            }
     }
 
     /**

@@ -1,1 +1,4 @@
 1. Modify MandelbrotSettingsPanel to work using MandelbrotSettingsPanel.ParentContainer callbacks.
+2. FIX Image window freezes while zooming too fast.
+3. FIX Image not properly scaled on resize
+4. FIX Selection region flickers.

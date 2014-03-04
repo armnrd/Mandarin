@@ -108,13 +108,18 @@ public class MandelbrotEngine {
             colMethod = null;
         }
 
-        public Parameters(BigDecimal plMinX, BigDecimal plMaxX, BigDecimal plMinY, BigDecimal plMaxY, int imgWidth, int imgHeight, int maxIter, boolean useArbPrec, int prec, int sampleSize, MandelbrotVariant mbrotVar, ColouringMethod colMeth) {
+        public Parameters(BigDecimal plMinX, BigDecimal plMaxX, BigDecimal
+                plMinY, BigDecimal plMaxY, int imgWidth, int imgHeight,
+                int maxIter, int sampleSize, MandelbrotVariant mbrotVar,
+                ColouringMethod colMeth) {
             planeMinX = plMinX;
             planeMaxX = plMaxX;
             planeMinY = plMinY;
             planeMaxY = plMaxY;
-            planeXUnit = plMaxX.subtract(plMinX, mathCont).divide(new BigDecimal(imgWidth, mathCont), mathCont);
-            planeYUnit = plMaxY.subtract(plMinY, mathCont).divide(new BigDecimal(imgHeight, mathCont), mathCont);
+            planeXUnit = plMaxX.subtract(plMinX, mathCont).divide(new
+                BigDecimal(imgWidth, mathCont), mathCont);
+            planeYUnit = plMaxY.subtract(plMinY, mathCont).divide(new
+                BigDecimal(imgHeight, mathCont), mathCont);
             this.imgWidth = imgWidth;
             this.imgHeight = imgHeight;
             this.maxIters = maxIter;
@@ -124,7 +129,7 @@ public class MandelbrotEngine {
         }
     }
 
-    private static int coreCount, threadCount, pixelArray[];
+    private static int coreCount, threadCount, maxPrecision, pixelArray[];
     private static BufferedImage image;
     private static EventHandler handler;
     private static Parameters params;
@@ -135,10 +140,11 @@ public class MandelbrotEngine {
     private void MandelbrotEngine() {
     }
 
-    public static void initialize(EventHandler h, int precision) {
+    public static void initialize(EventHandler h, int maxPrecision) {
         MandelbrotEngine.handler = h;
         MandelbrotEngine.coreCount = Runtime.getRuntime().availableProcessors();
-        mathCont = new MathContext(precision, RoundingMode.HALF_EVEN);
+        MandelbrotEngine.maxPrecision = maxPrecision;
+        mathCont = new MathContext(maxPrecision, RoundingMode.HALF_EVEN);
     }
 
     public static void setParameters(MandelbrotEngine.Parameters p) {
