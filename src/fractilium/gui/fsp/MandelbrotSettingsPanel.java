@@ -2,7 +2,8 @@
  * !---------------------------------------------------------------------------!
  *   MandelbrotSettingsPanel.java
  * 
- *   <FILE_DESCRIPTION_PLACEHOLDER>
+ *   Provides an interface to MandelbrotEngine. Can be used as a standalone
+ *   panel.
  * 
  *   Creation date: 04/12/2012
  *   Author: Arindam Biswas <ari.bsws at gmail.com>
@@ -32,7 +33,11 @@ import javax.imageio.ImageIO;
  * @author Arindam Biswas <ari.bsws at gmail.com>
  */
 public class MandelbrotSettingsPanel extends javax.swing.JPanel implements MandelbrotEngine.EventHandler {
-
+    
+    public static interface ParentContainer {
+        
+    }
+    
     private static final int PRECISION = 200;
     private int plusChainSampleSize, plusChainStep, plusChainPosition, plusChainLimit;
     private double imageRotation;
