@@ -1,3 +1,14 @@
+/* 
+ * !---------------------------------------------------------------------------!
+ *   Main.java
+ * 
+ *   <FILE_DESCRIPTION_PLACEHOLDER>
+ * 
+ *   Creation date: 28/12/2012
+ *   Author: Arindam Biswas <ari.bsws at gmail.com>
+ * !---------------------------------------------------------------------------!
+ */
+
 package fractilium;
 
 import fractilium.gui.fsp.MandelbrotSettingsPanel;
@@ -11,7 +22,7 @@ import javax.swing.*;
 
 /**
  *
- * @author Ari
+ * @author Arindam Biswas <ari.bsws at gmail.com>
  */
 public class Main extends javax.swing.JFrame {
 

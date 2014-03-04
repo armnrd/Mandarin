@@ -1,5 +1,17 @@
+/* 
+ * !---------------------------------------------------------------------------!
+ *   MandelbrotEngine.java
+ * 
+ *   <FILE_DESCRIPTION_PLACEHOLDER>
+ * 
+ *   Creation date: 04/12/2012
+ *   Author: Arindam Biswas <ari.bsws at gmail.com>
+ * !---------------------------------------------------------------------------!
+ */
+
 package fractilium.engine;
 
+import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -12,7 +24,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author androkot
+ * @author Arindam Biswas <ari.bsws at gmail.com>
  */
 public class MandelbrotEngine {
 
@@ -152,7 +164,6 @@ public class MandelbrotEngine {
                 }
                 stats.renderingTime = System.nanoTime() - stats.renderingTime;
                 stats.renderingTime /= 1000000;
-                stats.meanIterations /= params.imgWidth * params.imgHeight;
                 postProcess();
                 handler.renderingEnded();
                 handler.statsGenerated();
@@ -231,12 +242,12 @@ public class MandelbrotEngine {
     }
 
     private static void postProcess() {
-        
+
     }
 
-    private static int pixelColour(int iters) {
-        double ratio = iters / (double) params.maxIters;
-        return (int) (Math.sqrt(ratio) * ratio * (ratio / 2 + 0.5) * 0xf21f5f);
+    private static int pixelColour(int iters, double zR, double zI) {
+        float ratio = iters / (float) params.maxIters;
+        return Color.HSBtoRGB((float) Math.cbrt(ratio)/ 2 + 0.25f, ratio * ratio, 0.8f);
     }
 
     private static void renderRegionPrimitive(Rectangle region) {
@@ -255,13 +266,6 @@ public class MandelbrotEngine {
 
                 while (k < params.maxIters) {
                     if (zR * zR + zI * zI > (double) 25) {
-                        if (k < stats.minIterations) {
-                            stats.minIterations = k;
-                        } else if (k > stats.maxIterations) {
-                            stats.maxIterations = k;
-                        }
-                        // Prevent the value of convergentPoints from increasing.
-                        stats.convergentPoints--;
                         break;
                     }
 
@@ -270,9 +274,7 @@ public class MandelbrotEngine {
                     zI = 2 * temp * zI + cI;
                     k++;
                 }
-                stats.meanIterations += k;
-                stats.convergentPoints++;
-                pixelArray[(region.y + j) * params.imgWidth + region.x + i] = pixelColour(k);
+                pixelArray[(region.y + j) * params.imgWidth + region.x + i] = pixelColour(k, zR, zI);
             }
         }
 

@@ -1,3 +1,14 @@
+/* 
+ * !---------------------------------------------------------------------------!
+ *   MandelbrotSettingsPanel.java
+ * 
+ *   <FILE_DESCRIPTION_PLACEHOLDER>
+ * 
+ *   Creation date: 04/12/2012
+ *   Author: Arindam Biswas <ari.bsws at gmail.com>
+ * !---------------------------------------------------------------------------!
+ */
+
 package fractilium.gui.fsp;
 
 import fractilium.Main;
@@ -18,7 +29,7 @@ import javax.imageio.ImageIO;
 
 /**
  *
- * @author Ari
+ * @author Arindam Biswas <ari.bsws at gmail.com>
  */
 public class MandelbrotSettingsPanel extends javax.swing.JPanel implements MandelbrotEngine.EventHandler {
 
@@ -518,7 +529,6 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
 
         sampleSizeLabel.setText("Sample Size");
 
-        autoAdjustIterLimitCheckBox.setSelected(true);
         autoAdjustIterLimitCheckBox.setText("Auto");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
