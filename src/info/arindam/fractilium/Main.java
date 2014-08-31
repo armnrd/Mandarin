@@ -1,26 +1,34 @@
-/* 
- * !---------------------------------------------------------------------------!
- *   Main.java
- * 
- *   <FILE_DESCRIPTION_PLACEHOLDER>
- * 
- *   Creation date: 28/12/2012
- *   Author: Arindam Biswas <ari.bsws at gmail.com>
- * !---------------------------------------------------------------------------!
+/*
+ *!----------------------------------------------------------------------------!
+ *  Main.java
+ *
+ *  <FILE_DESCRIPTION_PLACEHOLDER>
+ *
+ *  Creation date: 28/12/2012
+ *  Author: Arindam Biswas <arindam dot b at fastmail dot fm>
+ *!----------------------------------------------------------------------------!
  */
 
-package fractilium;
+package info.arindam.fractilium;
 
-import fractilium.gui.fsp.MandelbrotSettingsPanel;
-import java.awt.*;
+import info.arindam.fractilium.gui.fsp.MandelbrotSettingsPanel;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.*;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  *
- * @author Arindam Biswas <ari.bsws at gmail.com>
+ * @author Arindam Biswas <arindam dot b at fastmail dot fm>
  */
 public class Main extends javax.swing.JFrame {
 
@@ -120,7 +128,7 @@ public class Main extends javax.swing.JFrame {
         settingsPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         settingsPanel.setLayout(new java.awt.CardLayout());
 
-        settingsPanel.add(new fractilium.gui.fsp.MandelbrotSettingsPanel(this, imagePanel.getBounds()), "Mandelbrot");
+        settingsPanel.add(new info.arindam.fractilium.gui.fsp.MandelbrotSettingsPanel(this, imagePanel.getBounds()), "Mandelbrot");
 
         jSplitPane1.setRightComponent(settingsPanel);
 
@@ -416,7 +424,7 @@ public class Main extends javax.swing.JFrame {
 
     private void saveBufferMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveBufferMenuItemActionPerformed
         JFileChooser fc;
-        
+
         fc = new JFileChooser();
         fc.setDialogTitle("Save As...");
         if(fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {

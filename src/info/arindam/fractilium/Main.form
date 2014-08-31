@@ -300,7 +300,7 @@
             </Property>
           </Properties>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_LayoutCodePost" type="java.lang.String" value="settingsPanel.add(new fractilium.gui.fsp.MandelbrotSettingsPanel(this, imagePanel.getBounds()), &quot;Mandelbrot&quot;);"/>
+            <AuxValue name="JavaCodeGenerator_LayoutCodePost" type="java.lang.String" value="settingsPanel.add(new info.arindam.fractilium.gui.fsp.MandelbrotSettingsPanel(this, imagePanel.getBounds()), &quot;Mandelbrot&quot;);"/>
           </AuxValues>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">

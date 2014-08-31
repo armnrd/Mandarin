@@ -1,15 +1,15 @@
-/* 
- * !---------------------------------------------------------------------------!
- *   MandelbrotEngine.java
- * 
- *   <FILE_DESCRIPTION_PLACEHOLDER>
- * 
- *   Creation date: 04/12/2012
- *   Author: Arindam Biswas <ari.bsws at gmail.com>
- * !---------------------------------------------------------------------------!
+/*
+ *!----------------------------------------------------------------------------!
+ *  MandelbrotEngine.java
+ *
+ *  <FILE_DESCRIPTION_PLACEHOLDER>
+ *
+ *  Creation date: 04/12/2012
+ *  Author: Arindam Biswas <arindam dot b at fastmail dot fm>
+ *!----------------------------------------------------------------------------!
  */
 
-package fractilium.engine;
+package info.arindam.fractilium.engine;
 
 import java.awt.Color;
 import java.awt.Rectangle;
@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Arindam Biswas <ari.bsws at gmail.com>
+ * @author Arindam Biswas <arindam dot b at fastmail.fm>
  */
 public class MandelbrotEngine {
 

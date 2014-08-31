@@ -1,22 +1,26 @@
-/* 
- * !---------------------------------------------------------------------------!
- *   MandelbrotSettingsPanel.java
- * 
- *   Provides an interface to MandelbrotEngine. Can be used as a standalone
- *   panel.
- * 
- *   Creation date: 04/12/2012
- *   Author: Arindam Biswas <ari.bsws at gmail.com>
- * !---------------------------------------------------------------------------!
+/*
+ *!----------------------------------------------------------------------------!
+ *  MandelbrotSettingsPanel.java
+ *
+ *  Provides an interface to MandelbrotEngine. Can be used as a standalone
+ *  panel.
+ *
+ *  Creation date: 04/12/2012
+ *  Author: Arindam Biswas <ari.bsws at gmail.com>
+ *!----------------------------------------------------------------------------!
  */
 
-package fractilium.gui.fsp;
+package info.arindam.fractilium.gui.fsp;
 
-import fractilium.Main;
-import fractilium.engine.MandelbrotEngine;
-import java.awt.*;
+import info.arindam.fractilium.Main;
+import info.arindam.fractilium.engine.MandelbrotEngine;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
-import java.awt.image.*;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -28,14 +32,14 @@ import javax.imageio.ImageIO;
 
 /**
  *
- * @author Arindam Biswas <ari.bsws at gmail.com>
+ * @author Arindam Biswas <arindam dot b at fastmail dot fm>
  */
 public class MandelbrotSettingsPanel extends javax.swing.JPanel implements MandelbrotEngine.EventHandler {
-    
+
     public static interface ParentContainer {
-        
+
     }
-    
+
     private static final int MAX_PRECISION = 200;
     private double imageRotation;
     private Rectangle outputSize;
@@ -194,7 +198,7 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
                     Image.SCALE_SMOOTH), 0, 0, null);
         }
     }
-    
+
     public void redrawImage() {
         BufferedImage i;
         Graphics g;
