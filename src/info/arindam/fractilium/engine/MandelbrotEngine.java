@@ -1,12 +1,12 @@
 /*
- *!----------------------------------------------------------------------------!
+ *!------------------------------------------------------------------------------------------------!
  *  MandelbrotEngine.java
  *
- *  <FILE_DESCRIPTION_PLACEHOLDER>
+ *  Functions in this class render Mandelbrot fractals.
  *
  *  Creation date: 04/12/2012
  *  Author: Arindam Biswas <arindam dot b at fastmail dot fm>
- *!----------------------------------------------------------------------------!
+ *!------------------------------------------------------------------------------------------------!
  */
 
 package info.arindam.fractilium.engine;
@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Arindam Biswas <arindam dot b at fastmail.fm>
+ * @author Arindam Biswas <arindam dot b at fastmail dot fm>
  */
 public class MandelbrotEngine {
 
@@ -63,21 +63,6 @@ public class MandelbrotEngine {
 
     public static class Parameters {
 
-        public static enum MandelbrotVariant {
-
-            REGULAR(0),
-            BUDDHABROT(1);
-            private final int n;
-
-            MandelbrotVariant(int n) {
-                this.n = n;
-            }
-
-            public int toNumber() {
-                return n;
-            }
-        }
-
         public static enum ColouringMethod {
 
             REGULAR(0),
@@ -96,22 +81,19 @@ public class MandelbrotEngine {
         }
         private final BigDecimal planeMinX, planeMaxX, planeMinY, planeMaxY,
                 planeXUnit, planeYUnit;
-        private final int imgWidth, imgHeight, maxIters, sampleSize;
-        private final MandelbrotVariant variant;
+        private final int imgWidth, imgHeight, maxIters;
         private final ColouringMethod colMethod;
 
         private Parameters() {
             planeMinX = planeMaxX = planeMinY = planeMaxY = planeXUnit
                     = planeYUnit = null;
-            imgWidth = imgHeight = maxIters = sampleSize = 0;
-            variant = null;
+            imgWidth = imgHeight = maxIters = 0;
             colMethod = null;
         }
 
         public Parameters(BigDecimal plMinX, BigDecimal plMaxX, BigDecimal
                 plMinY, BigDecimal plMaxY, int imgWidth, int imgHeight,
-                int maxIter, int sampleSize, MandelbrotVariant mbrotVar,
-                ColouringMethod colMeth) {
+                int maxIter, ColouringMethod colMeth) {
             planeMinX = plMinX;
             planeMaxX = plMaxX;
             planeMinY = plMinY;
@@ -123,13 +105,12 @@ public class MandelbrotEngine {
             this.imgWidth = imgWidth;
             this.imgHeight = imgHeight;
             this.maxIters = maxIter;
-            this.sampleSize = sampleSize;
-            this.variant = mbrotVar;
             this.colMethod = colMeth;
         }
     }
 
-    private static int coreCount, threadCount, maxPrecision, pixelArray[];
+    private static int coreCount, threadCount, maxPrecision, rawDataIters[], pixelArray[];
+    private static double rawDataZR[], rawDataZI[];
     private static BufferedImage image;
     private static EventHandler handler;
     private static Parameters params;
@@ -159,6 +140,11 @@ public class MandelbrotEngine {
                 Object lock = new Object();
                 image = new BufferedImage(params.imgWidth, params.imgHeight, BufferedImage.TYPE_INT_RGB);
                 pixelArray = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+                if (rawDataIters == null || rawDataIters.length != pixelArray.length) {
+                    rawDataIters = new int[pixelArray.length];
+                    rawDataZR = new double[pixelArray.length];
+                    rawDataZI = new double[pixelArray.length];
+                }
                 stats = new Statistics(params.maxIters, 0, 0, 0, System.nanoTime());
                 launchThreads(lock);
                 try {
@@ -201,6 +187,9 @@ public class MandelbrotEngine {
     public static void cleanup() {
         image = null;
         pixelArray = null;
+        rawDataIters = null;
+        rawDataZR = null;
+        rawDataZI = null;
         handler = null;
         params = null;
         stats = null;
@@ -280,7 +269,10 @@ public class MandelbrotEngine {
                     zI = 2 * temp * zI + cI;
                     k++;
                 }
-                pixelArray[(region.y + j) * params.imgWidth + region.x + i] = pixelColour(k, zR, zI);
+                int dataIdx = (region.y + j) * params.imgWidth + region.x + i;
+                rawDataIters[dataIdx] = k;
+                rawDataZR[dataIdx] = zR;
+                rawDataZI[dataIdx] = zI;
             }
         }
 

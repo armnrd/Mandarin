@@ -1,13 +1,13 @@
 /*
- *!----------------------------------------------------------------------------!
+ *!------------------------------------------------------------------------------------------------!
  *  MandelbrotSettingsPanel.java
  *
  *  Provides an interface to MandelbrotEngine. Can be used as a standalone
  *  panel.
  *
  *  Creation date: 04/12/2012
- *  Author: Arindam Biswas <ari.bsws at gmail.com>
- *!----------------------------------------------------------------------------!
+ *  Author: Arindam Biswas <arindam dot b at fastmail dot fm>
+ *!------------------------------------------------------------------------------------------------!
  */
 
 package info.arindam.fractilium.gui.fsp;
@@ -73,17 +73,6 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
         this.m = m;
         stats = new MandelbrotEngine.Statistics(0, 0, 0, 0, 0);
         MandelbrotEngine.initialize(this, MAX_PRECISION);
-    }
-
-    private MandelbrotEngine.Parameters.MandelbrotVariant getMandelbrotVariant(String s) {
-        switch (s) {
-            case "Regular":
-                return MandelbrotEngine.Parameters.MandelbrotVariant.REGULAR;
-            case "Buddhabrot":
-                return MandelbrotEngine.Parameters.MandelbrotVariant.BUDDHABROT;
-            default:
-                return MandelbrotEngine.Parameters.MandelbrotVariant.REGULAR;
-        }
     }
 
     private MandelbrotEngine.Parameters.ColouringMethod getColouringMethod(String s) {
@@ -178,7 +167,7 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
         setCurRenRegion(selMinX, selMaxX, selMinY, selMaxY);
         p = new MandelbrotEngine.Parameters(planeMinX, planeMaxX, planeMinY, planeMaxY,
                 outputSize.width, outputSize.height, Integer.parseInt(maxIterTextField.getText()),
-                Integer.parseInt(sampleSizeTextField.getText()), getMandelbrotVariant((String) mbrotVarComboBox.getSelectedItem()), getColouringMethod((String) colMethComboBox
+                getColouringMethod((String) colMethComboBox
                         .getSelectedItem()));
 
         MandelbrotEngine.setParameters(p);
@@ -341,13 +330,8 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
         jLabel5 = new javax.swing.JLabel();
         maxIterTextField = new javax.swing.JTextField();
         aaCheckBox = new javax.swing.JCheckBox();
-        sampleSizeTextField = new javax.swing.JTextField();
-        sampleSizeLabel = new javax.swing.JLabel();
         autoAdjustIterLimitCheckBox = new javax.swing.JCheckBox();
-        jPanel3 = new javax.swing.JPanel();
-        jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
-        mbrotVarComboBox = new javax.swing.JComboBox();
         colMethComboBox = new javax.swing.JComboBox();
         jPanel4 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
@@ -424,16 +408,16 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
             }
         });
 
-        sampleSizeTextField.setText("100000");
-        sampleSizeTextField.addActionListener(new java.awt.event.ActionListener() {
+        autoAdjustIterLimitCheckBox.setText("Auto");
+
+        jLabel12.setText("Colouring Method");
+
+        colMethComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Regular", "Red", "Green", "Blue" }));
+        colMethComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sampleSizeTextFieldActionPerformed(evt);
+                colMethComboBoxActionPerformed(evt);
             }
         });
-
-        sampleSizeLabel.setText("Sample Size");
-
-        autoAdjustIterLimitCheckBox.setText("Auto");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -443,17 +427,18 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel12)
+                        .addGap(15, 15, 15)
+                        .addComponent(colMethComboBox, 0, 126, Short.MAX_VALUE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(aaCheckBox)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(sampleSizeLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(sampleSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(autoAdjustIterLimitCheckBox)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(maxIterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(maxIterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(autoAdjustIterLimitCheckBox)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -464,45 +449,9 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
                     .addComponent(maxIterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(autoAdjustIterLimitCheckBox))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(aaCheckBox)
-                    .addComponent(sampleSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(sampleSizeLabel)))
-        );
-
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Algorithms"));
-
-        jLabel11.setText("Variant");
-
-        jLabel12.setText("Colouring Method");
-
-        mbrotVarComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Regular", "Buddhabrot" }));
-
-        colMethComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Regular", "Red", "Green", "Blue" }));
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel11)
-                    .addComponent(jLabel12))
-                .addGap(15, 15, 15)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(colMethComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(mbrotVarComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel11)
-                    .addComponent(mbrotVarComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(aaCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel12)
                     .addComponent(colMethComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
@@ -539,7 +488,7 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(16, Short.MAX_VALUE)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(sSizeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -564,7 +513,6 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
@@ -579,10 +527,8 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 188, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 248, Short.MAX_VALUE)
                 .addComponent(drawButton)
                 .addContainerGap())
         );
@@ -590,11 +536,7 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
 
 	private void aaCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_aaCheckBoxItemStateChanged
             if (aaCheckBox.isSelected()) {
-                sampleSizeLabel.setEnabled(true);
-                sampleSizeTextField.setEnabled(true);
-            } else {
-                sampleSizeLabel.setEnabled(false);
-                sampleSizeTextField.setEnabled(false);
+
             }
 	}//GEN-LAST:event_aaCheckBoxItemStateChanged
 
@@ -604,9 +546,9 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
         }
     }//GEN-LAST:event_drawButtonActionPerformed
 
-    private void sampleSizeTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sampleSizeTextFieldActionPerformed
+    private void colMethComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colMethComboBoxActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_sampleSizeTextFieldActionPerformed
+    }//GEN-LAST:event_colMethComboBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox aaCheckBox;
@@ -616,7 +558,6 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
     private javax.swing.JLabel curRenRegYLabel;
     private javax.swing.JButton drawButton;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -624,14 +565,10 @@ public class MandelbrotSettingsPanel extends javax.swing.JPanel implements Mande
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JTextField maxIterTextField;
-    private javax.swing.JComboBox mbrotVarComboBox;
     private javax.swing.JLabel sScaleLabel;
     private javax.swing.JLabel sSizeLabel;
-    private javax.swing.JLabel sampleSizeLabel;
-    private javax.swing.JTextField sampleSizeTextField;
     private javax.swing.JLabel selRenRegXLabel;
     private javax.swing.JLabel selRenRegYLabel;
     // End of variables declaration//GEN-END:variables
