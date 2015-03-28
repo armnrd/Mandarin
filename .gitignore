@@ -6,9 +6,7 @@
 *.war
 *.ear
 
-# Netbeans Project Files
-nbproject/
-build.xml
+# Build Directories
 build/
 dist/
 

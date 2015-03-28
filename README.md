@@ -1,4 +1,4 @@
-fractilium
+mandy
 ==========
 
-Render various types of fractals.
+A small application that renders Mandelbrot fractals.
