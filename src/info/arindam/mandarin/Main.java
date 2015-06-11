@@ -43,7 +43,7 @@ public class Main extends javax.swing.JFrame implements SettingsPanel.Listener {
         selRect = imagePanel.getBounds();
         zoomFactor = 1.5;
         settingsPanel.setOutputSize(imagePanel.getBounds());
-        settingsPanel.setListener(this);
+        settingsPanel.setListener(this); // TODO: Fix this.
         settingsPanel.startRendering();
     }
 
@@ -69,7 +69,6 @@ public class Main extends javax.swing.JFrame implements SettingsPanel.Listener {
         rotateImageMenu = new javax.swing.JMenu();
         rotateClockwiseMenuItem = new javax.swing.JMenuItem();
         rotateAnticlockwiseMenuItem = new javax.swing.JMenuItem();
-        fixScalingMenuItem = new javax.swing.JMenuItem();
         resetRenderingRegionMenuItem = new javax.swing.JMenuItem();
         redrawImageMenuItem = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
@@ -181,15 +180,6 @@ public class Main extends javax.swing.JFrame implements SettingsPanel.Listener {
 
         editMenu.add(rotateImageMenu);
 
-        fixScalingMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_MASK | java.awt.event.InputEvent.SHIFT_MASK));
-        fixScalingMenuItem.setText("Fix Scaling");
-        fixScalingMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fixScalingMenuItemActionPerformed(evt);
-            }
-        });
-        editMenu.add(fixScalingMenuItem);
-
         resetRenderingRegionMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
         resetRenderingRegionMenuItem.setText("Reset Rendering Region");
         resetRenderingRegionMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -257,7 +247,7 @@ public class Main extends javax.swing.JFrame implements SettingsPanel.Listener {
                 .addComponent(notificationAreaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 933, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(imagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 590, Short.MAX_VALUE)
+                .addComponent(imagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(settingsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -310,7 +300,11 @@ public class Main extends javax.swing.JFrame implements SettingsPanel.Listener {
 
 	private void imagePanelComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_imagePanelComponentResized
             settingsPanel.setOutputSize(imagePanel.getBounds());
-            fixScalingMenuItemActionPerformed(null);
+            clearSelectionRectangle();
+            Rectangle r = imagePanel.getBounds();
+            r.setLocation(0, 0);
+            settingsPanel.setSelectionRegion(r);
+            settingsPanel.startRendering();
 	}//GEN-LAST:event_imagePanelComponentResized
 
 	private void imagePanelMouseWheelMoved(java.awt.event.MouseWheelEvent evt) {//GEN-FIRST:event_imagePanelMouseWheelMoved
@@ -338,14 +332,6 @@ public class Main extends javax.swing.JFrame implements SettingsPanel.Listener {
             }
 	}//GEN-LAST:event_mouseSpeedRadioButtonActionPerformed
 
-	private void fixScalingMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fixScalingMenuItemActionPerformed
-            clearSelectionRectangle();
-            Rectangle r = imagePanel.getBounds();
-            r.setLocation(0, 0);
-            settingsPanel.setSelectionRegion(r);
-            settingsPanel.startRendering();
-	}//GEN-LAST:event_fixScalingMenuItemActionPerformed
-
     private void saveBufferMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveBufferMenuItemActionPerformed
         JFileChooser fc;
 
@@ -353,6 +339,7 @@ public class Main extends javax.swing.JFrame implements SettingsPanel.Listener {
         fc.setDialogTitle("Save As...");
         if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             settingsPanel.writeImageToFile(fc.getSelectedFile());
+            notificationAreaLabel.setText("Buffer saved to " + fc.getSelectedFile().getPath() + ".");
         }
     }//GEN-LAST:event_saveBufferMenuItemActionPerformed
 
@@ -399,7 +386,6 @@ public class Main extends javax.swing.JFrame implements SettingsPanel.Listener {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenu fileMenu;
-    private javax.swing.JMenuItem fixScalingMenuItem;
     private javax.swing.ButtonGroup fractalButtonGroup;
     private javax.swing.JPanel imagePanel;
     private javax.swing.JMenu jMenu1;

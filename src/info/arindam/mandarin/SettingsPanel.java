@@ -267,19 +267,19 @@ public class SettingsPanel extends javax.swing.JPanel implements Engine.Listener
     @Override
     public void renderingBegun() {
         l.getProgressBar().setIndeterminate(true);
-        l.getNotificationAreaLabel().setText("Rendering begun");
+        l.getNotificationAreaLabel().setText("Rendering begun.");
     }
 
     @Override
     public void regionRendered(Rectangle region) {
-        l.getNotificationAreaLabel().setText("Region rendered: " + region);
+        // l.getNotificationAreaLabel().setText("Region rendered: " + region + ".");
     }
 
     @Override
     public void renderingEnded() {
         drawImage();
         l.getProgressBar().setIndeterminate(false);
-        l.getNotificationAreaLabel().setText("Rendered image");
+        l.getNotificationAreaLabel().setText("Rendered image.");
         renderInProgress = false;
     }
 
@@ -294,7 +294,7 @@ public class SettingsPanel extends javax.swing.JPanel implements Engine.Listener
         stats = Engine.getStatistics();
 
         sScaleLabel.setText(String.format("%.3Gx", 3 / (planeMaxX - planeMinX)));
-        l.getNotificationAreaLabel().setText(String.format("Rendered in %.3f ms", stats.renderingTime));
+        l.getNotificationAreaLabel().setText(String.format("Rendered in %.3f ms.", stats.renderingTime));
     }
 
     /**
