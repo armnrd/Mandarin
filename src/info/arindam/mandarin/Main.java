@@ -9,7 +9,7 @@
  *!------------------------------------------------------------------------------------------------!
  */
 
-package info.arindam.mandy;
+package info.arindam.mandarin;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -61,7 +61,7 @@ public class Main extends javax.swing.JFrame implements SettingsPanel.Listener {
         notificationAreaLabel = new javax.swing.JLabel();
         progressBar = new javax.swing.JProgressBar();
         imagePanel = new javax.swing.JPanel();
-        settingsPanel = new info.arindam.mandy.SettingsPanel();
+        settingsPanel = new info.arindam.mandarin.SettingsPanel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         saveBufferMenuItem = new javax.swing.JMenuItem();
@@ -425,7 +425,7 @@ public class Main extends javax.swing.JFrame implements SettingsPanel.Listener {
     private javax.swing.JMenuItem rotateClockwiseMenuItem;
     private javax.swing.JMenu rotateImageMenu;
     private javax.swing.JMenuItem saveBufferMenuItem;
-    private info.arindam.mandy.SettingsPanel settingsPanel;
+    private info.arindam.mandarin.SettingsPanel settingsPanel;
     // End of variables declaration//GEN-END:variables
 
     private void drawSelectionRectangle(Rectangle r) {

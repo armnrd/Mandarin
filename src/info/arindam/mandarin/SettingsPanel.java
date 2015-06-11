@@ -9,7 +9,7 @@
  *!------------------------------------------------------------------------------------------------!
  */
 
-package info.arindam.mandy;
+package info.arindam.mandarin;
 
 import java.awt.Graphics;
 import java.awt.Image;

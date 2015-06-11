@@ -275,7 +275,7 @@
         </DimensionLayout>
       </Layout>
     </Container>
-    <Component class="info.arindam.mandy.SettingsPanel" name="settingsPanel">
+    <Component class="info.arindam.mandarin.SettingsPanel" name="settingsPanel">
     </Component>
   </SubComponents>
 </Form>
