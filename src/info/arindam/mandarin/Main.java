@@ -310,12 +310,7 @@ public class Main extends javax.swing.JFrame implements SettingsPanel.Listener {
 
 	private void imagePanelComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_imagePanelComponentResized
             settingsPanel.setOutputSize(imagePanel.getBounds());
-            settingsPanel.redrawImage();
-
-
-            if (!selRect.isEmpty()) {
-                drawSelectionRectangle(selRect);
-            }
+            fixScalingMenuItemActionPerformed(null);
 	}//GEN-LAST:event_imagePanelComponentResized
 
 	private void imagePanelMouseWheelMoved(java.awt.event.MouseWheelEvent evt) {//GEN-FIRST:event_imagePanelMouseWheelMoved
@@ -327,8 +322,6 @@ public class Main extends javax.swing.JFrame implements SettingsPanel.Listener {
             }
 
             settingsPanel.zoom(evt.getPoint(), zoomFactor);
-
-
 	}//GEN-LAST:event_imagePanelMouseWheelMoved
 
 	private void mouseSpeedRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mouseSpeedRadioButtonActionPerformed
