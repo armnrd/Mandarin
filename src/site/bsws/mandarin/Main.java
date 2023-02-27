@@ -9,7 +9,7 @@
  *!------------------------------------------------------------------------------------------------!
  */
 
-package info.arindam.mandarin;
+package site.bsws.mandarin;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -26,7 +26,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  *
- * @author Arindam Biswas <arindam dot b at eml dot cc>
+ * @author Arindam Biswas <arindam dot b at ftml dot net>
  */
 public class Main extends javax.swing.JFrame implements SettingsPanel.Listener {
 

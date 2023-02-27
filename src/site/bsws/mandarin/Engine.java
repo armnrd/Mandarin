@@ -9,7 +9,7 @@
  *!------------------------------------------------------------------------------------------------!
  */
 
-package info.arindam.mandarin;
+package site.bsws.mandarin;
 
 import java.awt.Color;
 import java.awt.Rectangle;
