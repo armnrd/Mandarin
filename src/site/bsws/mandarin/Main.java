@@ -36,7 +36,7 @@ public class Main extends javax.swing.JFrame implements SettingsPanel.Listener {
     private SettingsPanel sp;
 
     /**
-     * Creates new form Fractilium
+     * Creates new form Mandarin
      */
     public Main() {
         initComponents();
@@ -61,7 +61,7 @@ public class Main extends javax.swing.JFrame implements SettingsPanel.Listener {
         notificationAreaLabel = new javax.swing.JLabel();
         progressBar = new javax.swing.JProgressBar();
         imagePanel = new javax.swing.JPanel();
-        settingsPanel = new info.arindam.mandarin.SettingsPanel();
+        settingsPanel = new site.bsws.mandarin.SettingsPanel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         saveBufferMenuItem = new javax.swing.JMenuItem();
@@ -78,7 +78,7 @@ public class Main extends javax.swing.JFrame implements SettingsPanel.Listener {
         jRadioButtonMenuItem8 = new javax.swing.JRadioButtonMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Fractilium");
+        setTitle("Mandarin");
 
         notificationAreaPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         notificationAreaPanel.setPreferredSize(new java.awt.Dimension(0, 28));
@@ -404,7 +404,7 @@ public class Main extends javax.swing.JFrame implements SettingsPanel.Listener {
     private javax.swing.JMenuItem rotateClockwiseMenuItem;
     private javax.swing.JMenu rotateImageMenu;
     private javax.swing.JMenuItem saveBufferMenuItem;
-    private info.arindam.mandarin.SettingsPanel settingsPanel;
+    private site.bsws.mandarin.SettingsPanel settingsPanel;
     // End of variables declaration//GEN-END:variables
 
     private void drawSelectionRectangle(Rectangle r) {
